@@ -43,6 +43,13 @@
       "when": 1789967053995,
       "tag": "0005_generations_storage_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789982073206,
+      "tag": "0006_opera_ai_core_schema",
+      "breakpoints": true
     }
   ]
 }
