@@ -50,6 +50,13 @@
       "when": 1789982073206,
       "tag": "0006_opera_ai_core_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789982092415,
+      "tag": "0007_profile_country_and_avatar_storage",
+      "breakpoints": true
     }
   ]
 }
