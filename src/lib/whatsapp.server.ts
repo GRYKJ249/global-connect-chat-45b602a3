@@ -1,50 +1,38 @@
 /**
- * Sends one-time codes over the WhatsApp Cloud API.
+ * Sends one-time codes over WhatsApp via Green API (green-api.com).
  *
  * Required secrets (set them and code delivery turns on automatically):
- *   WHATSAPP_PHONE_NUMBER_ID  - the sender phone number id from Meta
- *   WHATSAPP_TOKEN            - a permanent access token for that number
- *   WHATSAPP_TEMPLATE_NAME    - optional, defaults to "verification_code"
- *   WHATSAPP_TEMPLATE_LANG    - optional, defaults to "en_US"
+ *   WHATSAPP_PHONE_NUMBER_ID  - the Green API idInstance (e.g. 710722741840)
+ *   WHATSAPP_TOKEN            - the Green API apiTokenInstance
+ *   WHATSAPP_API_URL          - optional, defaults to https://7107.api.greenapi.com
  */
 
+function greenApiBaseUrl() {
+  const instance = process.env["WHATSAPP_PHONE_NUMBER_ID"];
+  const token = process.env["WHATSAPP_TOKEN"];
+  if (!instance || !token) return null;
+  const apiUrl = process.env["WHATSAPP_API_URL"] ?? "https://7107.api.greenapi.com";
+  return `${apiUrl}/waInstance${instance}/sendMessage/${token}`;
+}
+
 export function whatsappConfigured() {
-  return Boolean(process.env["WHATSAPP_PHONE_NUMBER_ID"] && process.env["WHATSAPP_TOKEN"]);
+  return Boolean(greenApiBaseUrl());
 }
 
 export async function sendWhatsappCode(phone: string, code: string) {
-  const phoneNumberId = process.env["WHATSAPP_PHONE_NUMBER_ID"];
-  const token = process.env["WHATSAPP_TOKEN"];
-  if (!phoneNumberId || !token) {
+  const url = greenApiBaseUrl();
+  if (!url) {
     return { sent: false as const, reason: "not_configured" as const };
   }
 
-  const template = process.env["WHATSAPP_TEMPLATE_NAME"] ?? "verification_code";
-  const language = process.env["WHATSAPP_TEMPLATE_LANG"] ?? "en_US";
+  const digits = phone.replace(/^\+/, "").replace(/\D/g, "");
 
-  const response = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
+  const response = await fetch(url, {
     method: "POST",
-    headers: {
-      authorization: `Bearer ${token}`,
-      "content-type": "application/json",
-    },
+    headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: phone.replace(/^\+/, ""),
-      type: "template",
-      template: {
-        name: template,
-        language: { code: language },
-        components: [
-          { type: "body", parameters: [{ type: "text", text: code }] },
-          {
-            type: "button",
-            sub_type: "url",
-            index: "0",
-            parameters: [{ type: "text", text: code }],
-          },
-        ],
-      },
+      chatId: `${digits}@c.us`,
+      message: `رمز التحقق الخاص بك هو: ${code}\nYour verification code is: ${code}`,
     }),
   });
 
